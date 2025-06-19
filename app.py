@@ -2,13 +2,15 @@ from flask import Flask, request, jsonify, render_template_string
 import joblib
 import numpy as np
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# Load the trained model (make sure this filename matches your .pkl file)
+# Load the pre-trained model
 model = joblib.load("iris_rf_model.pkl")
 
-# HTML Form Template (embedded)
+# Class labels for Iris dataset
+class_names = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
+
+# HTML Form Template
 html_form = """
 <!DOCTYPE html>
 <html>
@@ -79,39 +81,49 @@ html_form = """
 </html>
 """
 
-# Home route handles both GET (show form) and POST (form submit)
+# Route for HTML form
 @app.route("/", methods=["GET", "POST"])
 def home():
     prediction = None
     if request.method == "POST":
         try:
-            # Gather features from form
             features = [
                 float(request.form['sepal_length']),
                 float(request.form['sepal_width']),
                 float(request.form['petal_length']),
                 float(request.form['petal_width'])
             ]
-            # Predict and map to species name
-            pred_idx = model.predict([features])[0]
-            class_names = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
-            prediction = class_names[int(pred_idx)]
+            pred = model.predict([features])[0]
+            prediction = class_names[int(pred)]
         except Exception as e:
             prediction = f"Error: {str(e)}"
+    
     return render_template_string(html_form, prediction=prediction)
 
-# API endpoint for JSON requests
+# JSON API Endpoint
 @app.route("/predict", methods=["POST"])
 def api_predict():
-    data = request.get_json(silent=True)
-    if not data or "features" not in data:
-        return jsonify({"error": "JSON with a 'features' array is required"}), 400
-    try:
-        arr = np.array(data["features"], dtype=float).reshape(1, -1)
-        pred_idx = model.predict(arr)[0]
-        return jsonify({"prediction": int(pred_idx)})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    if request.is_json:
+        data = request.get_json()
+        try:
+            if "features" not in data or not isinstance(data["features"], list) or len(data["features"]) != 4:
+                return jsonify({"error": "Expected 'features' as a list of 4 numeric values"}), 400
+            
+            features = np.array(data["features"]).reshape(1, -1)
+            prediction = model.predict(features)[0]
+            return jsonify({
+                "prediction": int(prediction),
+                "label": class_names[int(prediction)]
+            })
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    else:
+        return jsonify({"error": "Request must be JSON with 'features' field"}), 400
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     app.run(debug=False, host='0.0.0.0', port=10000)
+=======
+    app.run(debug=False, host='0.0.0.0', port=10000)
+
+>>>>>>> 2c3ab953180a17d975e75581fcd7992449fa3c18
