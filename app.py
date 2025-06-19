@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, render_template_string
 import joblib
 import numpy as np
@@ -120,10 +121,7 @@ def api_predict():
     else:
         return jsonify({"error": "Request must be JSON with 'features' field"}), 400
 
+# Expose app for Gunicorn
 if __name__ == "__main__":
-<<<<<<< HEAD
-    app.run(debug=False, host='0.0.0.0', port=10000)
-=======
-    app.run(debug=False, host='0.0.0.0', port=10000)
-
->>>>>>> 2c3ab953180a17d975e75581fcd7992449fa3c18
+    port = int(os.environ.get("PORT", 10000))
+    app.run(debug=False, host='0.0.0.0', port=port)
