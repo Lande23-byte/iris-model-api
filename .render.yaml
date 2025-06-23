@@ -1,7 +1,11 @@
 services:
--type: web
-name: iris-model-api
-env: python
-plan: free
-buildCommand: pip install -requirements.txt
-startCommand: python app.python
+  - type: web
+    name: iris-flask-app
+    env: python
+    buildCommand: ""
+    startCommand: gunicorn app:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+
+  
