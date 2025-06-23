@@ -5,7 +5,7 @@ import numpy as np
 app = Flask(__name__)
 
 # Load the pre-trained model
-model = joblib.load("iris_model.pkl")
+model = joblib.load("iris_rf_model.pkl")
 
 # Class labels for Iris dataset
 class_names = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
